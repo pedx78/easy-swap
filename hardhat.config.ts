@@ -17,6 +17,7 @@ task("swap", "Fill portfolio using UNISWAP V2 from ETH")
     .setAction(async (taskArgs, {ethers}) => {
         const signers = await ethers.getSigners();
         const receiver = await signers[0].getAddress();
+        console.log(`Address of the receiver ${receiver}`);
         const uniswapRouterAddr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
         //@ts-ignore
         const {IUniswapV2RouterFactory} = await import("./typechain/IUniswapV2RouterFactory");
@@ -43,10 +44,10 @@ task("swap", "Fill portfolio using UNISWAP V2 from ETH")
 
         console.log(`Performing swap USDT, USDC, DAI, pBTC...`);
 
-        let usdtPath = [WETH, usdtAddr];
-        let usdcPath = [WETH, usdcAddr];
-        let daiPath = [WETH, daiAddr];
-        let pbtcPath = [WETH, pbtcAddr];
+        const usdtPath = [WETH, usdtAddr];
+        const usdcPath = [WETH, usdcAddr];
+        const daiPath = [WETH, daiAddr];
+        const pbtcPath = [WETH, pbtcAddr];
 
         await pancakeRouter.swapExactETHForTokens(0, usdtPath, receiver, deadline, {value: val});
         await pancakeRouter.swapExactETHForTokens(0, usdcPath, receiver, deadline, {value: val});
@@ -65,15 +66,15 @@ task("swap", "Fill portfolio using UNISWAP V2 from ETH")
         const pbtcBalance = await pbtc.balanceOf(receiver);
         console.log(`pBTC balance: ${utils.formatUnits(pbtcBalance, 18)} pBTC`);
 
-        let ethBalance = await ethers.provider.getBalance(receiver);
-
-        console.log(`ETH balance of account: ${ethers.utils.formatEther(ethBalance)}`);
+        const ethBalance = await ethers.provider.getBalance(receiver);
+        console.log(`ETH balance: ${ethers.utils.formatEther(ethBalance)} ETH`);
 });
 
 task("swap-busd", "Get BUSD")
     .setAction(async (taskArgs, {ethers}) => {
         const signers = await ethers.getSigners();
         const receiver = await signers[0].getAddress();
+        console.log(`Address of the receiver ${receiver}`);
         const pancakeRouterAddr = "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F";
         const WBNB = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
         const busdAddr = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
@@ -84,11 +85,18 @@ task("swap-busd", "Get BUSD")
         const pancakeRouter = IPancakeRouterFactory.connect(pancakeRouterAddr, signers[0]);
         const busd = Ierc20Factory.connect(busdAddr, signers[0]);
         const deadline = 1646874353;
-        let path = [WBNB, busdAddr];
+
+        console.log(`Performing swap BUSD...`);
+
+        const path = [WBNB, busdAddr];
         const val = constants.WeiPerEther.mul(10);
         await pancakeRouter.swapExactETHForTokens(0, path, receiver, deadline, {value: val});
-        let bal = await busd.balanceOf(receiver);
-        console.log(`BUSD acquired: ${utils.formatUnits(bal, 18)} BUSD`);
+
+        const busdBalance = await busd.balanceOf(receiver);
+        console.log(`BUSD balance: ${utils.formatUnits(busdBalance, 18)} BUSD`);
+
+        const bnbBalance = await ethers.provider.getBalance(receiver);
+        console.log(`BNB balance: ${ethers.utils.formatEther(bnbBalance)} BNB`);
 });
 
 task("timetravel", "Time travel")
